@@ -1,0 +1,13 @@
+table {
+    margin: auto;
+}
+
+td {
+    font-size: large;
+    text-align: center;
+    vertical-align: middle;
+    border-style: solid;
+    border-color: black;
+    width: 100px;
+    height: 100px;
+}

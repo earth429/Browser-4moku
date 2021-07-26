@@ -1,0 +1,9 @@
+.tile{
+	width: 80px;
+	height: 80px;
+	font-size: 60px;
+}
+
+.center{
+	margin: 0 auto;
+}
