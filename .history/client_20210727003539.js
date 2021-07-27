@@ -7,7 +7,7 @@
     const hostname = '127.0.0.1';
     const port = 3000;
 
-    window.onload = function () { // For jQuery
+    window.onload = function () {
         const socket = io.connect(`http://${hostname}:${port}`);
         class Player {
             constructor(name, type) {
@@ -17,22 +17,9 @@
                 this.playsArr = 0;
             }
 
-            /**
-             *     33825               4680  
-             *        \               /
-             *          1 |   2 |   4 |   8  = 15
-             *       -----+-----+-----+-----
-             *         16 |  32 |  64 | 128  = 240 
-             *       -----+-----+-----+-----
-             *         64 | 128 | 256 | 448 = 3840
-             *       -----+-----+-----+-----
-             *        4096| 8192|16384|32768 = 61440
-             *       =======================
-             *        4369  8738 17476 34952  
-             *
-             */
             static get wins() {
                 return [15, 240, 3840, 61440, 4369, 8738, 17476, 34952, 4680, 33825];
+                // return [7, 56, 448, 73, 146, 292, 273, 84];
             }
 
             // Set the bit of the move played by the player
@@ -88,7 +75,7 @@
                     game.updateBoard(player.getPlayerType(), row, col, this.id);
 
                     player.setCurrentTurn(false);
-                    player.updatePlaysArr(1 << ((row * 4) + col));
+                    player.updatePlaysArr(1 << ((row * 3) + col));
 
                     game.checkWinner();
                 }
@@ -128,6 +115,7 @@
             // Send an update to the opponent to update their UI's tile
             playTurn(tile) {
                 const clickedTile = $(tile).attr('id');
+                console.log('playTurn now!')
 
                 // Emit an event to update other player that you've played your turn.
                 socket.emit('playTurn', {
@@ -135,7 +123,20 @@
                     room: this.getRoomId(),
                 });
             }
-
+            /**
+             *     33825               4680  
+             *        \               /
+             *          1 |   2 |   4 |   8  = 15
+             *       -----+-----+-----+-----
+             *         16 |  32 |  64 | 128  = 240 
+             *       -----+-----+-----+-----
+             *         64 | 128 | 256  = 448 = 3840
+             *       -----+-----+-----+-----
+             *        4096| 8192|16384|32768 = 61440
+             *       =======================
+             *        4369  8738 17476 34952  
+             *
+             */
             checkWinner() {
                 const currentPlayerPositions = player.getPlaysArr();
 
@@ -209,7 +210,7 @@
 
         // New Game created by current client. Update the UI and create new Game var.
         socket.on('newGame', (data) => {
-            const message = `あなたは${data.name}で先攻です．利用するマークはXです．対戦相手はこのリンクにアクセスしてください: ${data.url}`;
+            const message = `あなたは${data.name}です．利用するマークはXです．対戦相手はこのリンクにアクセスしてください: ${data.url}`;
 
             // Create game for player 1
             game = new Game(data.room);
@@ -221,6 +222,8 @@
          * This event is received when opponent connects to the room.
          */
         socket.on('player1', (data) => {
+            console.log('setCurrentTurn(true) 1');
+            // const message = `Hello, ${player.getPlayerName()}`;
             player.setCurrentTurn(true);
         });
 
@@ -230,7 +233,7 @@
          */
         socket.on('player2', (data) => {
             $('#new').hide();
-            const message = `あなたは${data.name}で後攻です．利用するマークはOです．`;
+            const message = `あなたは${data.name}です．利用するマークはOです．`;
 
             // Create game for player 2
             game = new Game(data.room);
@@ -243,6 +246,7 @@
          * Allow the current player to play now.
          */
         socket.on('turnPlayed', (data) => {
+            console.log('setCurrentTurn(true) 2');
             const row = data.tile.split('_')[1][0];
             const col = data.tile.split('_')[1][1];
             const opponentType = player.getPlayerType() === P1 ? P2 : P1;

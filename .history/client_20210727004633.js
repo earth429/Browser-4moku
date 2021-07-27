@@ -7,7 +7,7 @@
     const hostname = '127.0.0.1';
     const port = 3000;
 
-    window.onload = function () { // For jQuery
+    window.onload = function () {
         const socket = io.connect(`http://${hostname}:${port}`);
         class Player {
             constructor(name, type) {
@@ -16,7 +16,7 @@
                 this.currentTurn = true;
                 this.playsArr = 0;
             }
-
+            
             /**
              *     33825               4680  
              *        \               /
@@ -24,7 +24,7 @@
              *       -----+-----+-----+-----
              *         16 |  32 |  64 | 128  = 240 
              *       -----+-----+-----+-----
-             *         64 | 128 | 256 | 448 = 3840
+             *         64 | 128 | 256  = 448 = 3840
              *       -----+-----+-----+-----
              *        4096| 8192|16384|32768 = 61440
              *       =======================
@@ -88,7 +88,7 @@
                     game.updateBoard(player.getPlayerType(), row, col, this.id);
 
                     player.setCurrentTurn(false);
-                    player.updatePlaysArr(1 << ((row * 4) + col));
+                    player.updatePlaysArr(1 << ((row * 3) + col));
 
                     game.checkWinner();
                 }
@@ -128,6 +128,7 @@
             // Send an update to the opponent to update their UI's tile
             playTurn(tile) {
                 const clickedTile = $(tile).attr('id');
+                console.log('playTurn now!')
 
                 // Emit an event to update other player that you've played your turn.
                 socket.emit('playTurn', {
@@ -209,7 +210,7 @@
 
         // New Game created by current client. Update the UI and create new Game var.
         socket.on('newGame', (data) => {
-            const message = `あなたは${data.name}で先攻です．利用するマークはXです．対戦相手はこのリンクにアクセスしてください: ${data.url}`;
+            const message = `あなたは${data.name}です．利用するマークはXです．対戦相手はこのリンクにアクセスしてください: ${data.url}`;
 
             // Create game for player 1
             game = new Game(data.room);
@@ -230,7 +231,7 @@
          */
         socket.on('player2', (data) => {
             $('#new').hide();
-            const message = `あなたは${data.name}で後攻です．利用するマークはOです．`;
+            const message = `あなたは${data.name}です．利用するマークはOです．`;
 
             // Create game for player 2
             game = new Game(data.room);

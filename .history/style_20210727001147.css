@@ -1,11 +1,9 @@
-.button_wrapper{
-    text-align:center;
-}
-
 .button{
-    width:30%;
+    /* height:30px; */
+    width:100%;
     padding:10px;
     font-size:30px;
+    margin: 0 auto;
 }
 
 .tile{

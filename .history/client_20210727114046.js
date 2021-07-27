@@ -5,9 +5,10 @@
     let game;
 
     const hostname = '127.0.0.1';
+    // const hostname = '192.168.144.243';
     const port = 3000;
 
-    window.onload = function () { // For jQuery
+    window.onload = function () {
         const socket = io.connect(`http://${hostname}:${port}`);
         class Player {
             constructor(name, type) {
@@ -24,7 +25,7 @@
              *       -----+-----+-----+-----
              *         16 |  32 |  64 | 128  = 240 
              *       -----+-----+-----+-----
-             *         64 | 128 | 256 | 448 = 3840
+             *         64 | 128 | 256  = 448 = 3840
              *       -----+-----+-----+-----
              *        4096| 8192|16384|32768 = 61440
              *       =======================
@@ -209,7 +210,7 @@
 
         // New Game created by current client. Update the UI and create new Game var.
         socket.on('newGame', (data) => {
-            const message = `あなたは${data.name}で先攻です．利用するマークはXです．対戦相手はこのリンクにアクセスしてください: ${data.url}`;
+            const message = `あなたは${data.name}で先行です．利用するマークはXです．対戦相手はこのリンクにアクセスしてください: ${data.url}`;
 
             // Create game for player 1
             game = new Game(data.room);

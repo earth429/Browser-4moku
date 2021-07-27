@@ -7,7 +7,7 @@
     const hostname = '127.0.0.1';
     const port = 3000;
 
-    window.onload = function () { // For jQuery
+    window.onload = function () {
         const socket = io.connect(`http://${hostname}:${port}`);
         class Player {
             constructor(name, type) {

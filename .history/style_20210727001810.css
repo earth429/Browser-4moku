@@ -3,9 +3,11 @@
 }
 
 .button{
-    width:30%;
+    width:60%;
     padding:10px;
     font-size:30px;
+    margin-left:10%;
+    margin-right:10%
 }
 
 .tile{

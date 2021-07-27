@@ -7,7 +7,7 @@
     const hostname = '127.0.0.1';
     const port = 3000;
 
-    window.onload = function () { // For jQuery
+    window.onload = function () {
         const socket = io.connect(`http://${hostname}:${port}`);
         class Player {
             constructor(name, type) {
@@ -17,22 +17,9 @@
                 this.playsArr = 0;
             }
 
-            /**
-             *     33825               4680  
-             *        \               /
-             *          1 |   2 |   4 |   8  = 15
-             *       -----+-----+-----+-----
-             *         16 |  32 |  64 | 128  = 240 
-             *       -----+-----+-----+-----
-             *         64 | 128 | 256 | 448 = 3840
-             *       -----+-----+-----+-----
-             *        4096| 8192|16384|32768 = 61440
-             *       =======================
-             *        4369  8738 17476 34952  
-             *
-             */
             static get wins() {
                 return [15, 240, 3840, 61440, 4369, 8738, 17476, 34952, 4680, 33825];
+                // return [7, 56, 448, 73, 146, 292, 273, 84];
             }
 
             // Set the bit of the move played by the player
@@ -48,7 +35,8 @@
             // Set the currentTurn for player to turn and update UI to reflect the same.
             setCurrentTurn(turn) {
                 this.currentTurn = turn;
-                const message = turn ? 'あなたの番です．' : '相手の番を待っています...';
+                const message = turn ? 'Your turn' : 'Waiting for Opponent';
+                console.log(message);
                 $('#turn').text(message);
             }
 
@@ -79,7 +67,12 @@
                     const row = parseInt(this.id.split('_')[1][0], 10);
                     const col = parseInt(this.id.split('_')[1][1], 10);
                     if (!player.getCurrentTurn() || !game) {
-                        alert('相手の番です！');
+                        alert('Its not your turn!');
+                        return;
+                    }
+
+                    if ($(this).prop('disabled')) {
+                        alert('This tile has already been played on!');
                         return;
                     }
 
@@ -88,7 +81,7 @@
                     game.updateBoard(player.getPlayerType(), row, col, this.id);
 
                     player.setCurrentTurn(false);
-                    player.updatePlaysArr(1 << ((row * 4) + col));
+                    player.updatePlaysArr(1 << ((row * 3) + col));
 
                     game.checkWinner();
                 }
@@ -128,6 +121,7 @@
             // Send an update to the opponent to update their UI's tile
             playTurn(tile) {
                 const clickedTile = $(tile).attr('id');
+                console.log('playTurn now!')
 
                 // Emit an event to update other player that you've played your turn.
                 socket.emit('playTurn', {
@@ -135,7 +129,29 @@
                     room: this.getRoomId(),
                 });
             }
-
+            /**
+             * return [7, 56, 448, 73, 146, 292, 273, 84];
+             * To determine a win condition, each square is "tagged" from left
+             * to right, top to bottom, with successive powers of 2.  Each cell
+             * thus represents an individual bit in a 9-bit string, and a
+             * player's squares at any given time can be represented as a
+             * unique 9-bit value. A winner can thus be easily determined by
+             * checking whether the player's current 9 bits have covered any
+             * of the eight "three-in-a-row" combinations.
+             *
+             *     273                 84
+             *        \               /
+             *          1 |   2 |   4  = 7
+             *       -----+-----+-----
+             *          8 |  16 |  32  = 56
+             *       -----+-----+-----
+             *         64 | 128 | 256  = 448
+             *       =================
+             *         73   146   292
+             *
+             *  We have these numbers in the Player.wins array and for the current
+             *  player, we've stored this information in playsArr.
+             */
             checkWinner() {
                 const currentPlayerPositions = player.getPlaysArr();
 
@@ -145,7 +161,7 @@
                     }
                 });
 
-                const tieMessage = '引き分けです．';
+                const tieMessage = 'Game Tied :(';
                 if (this.checkTie()) {
                     socket.emit('gameEnded', {
                         room: this.getRoomId(),
@@ -163,7 +179,7 @@
             // Announce the winner if the current client has won.
             // Broadcast this on the room to let the opponent know.
             announceWinner() {
-                const message = `${player.getPlayerName()}の勝ち!`;
+                const message = `${player.getPlayerName()} wins!`;
                 socket.emit('gameEnded', {
                     room: this.getRoomId(),
                     message,
@@ -200,7 +216,6 @@
 
         // Create a new game. Emit newGame event.
         $('#new').on('click', () => {
-            $('#new').hide();
             const name = 'player1';
             socket.emit('createGame', { name });
             player = new Player(name, P1);
@@ -209,7 +224,7 @@
 
         // New Game created by current client. Update the UI and create new Game var.
         socket.on('newGame', (data) => {
-            const message = `あなたは${data.name}で先攻です．利用するマークはXです．対戦相手はこのリンクにアクセスしてください: ${data.url}`;
+            const message = `あなたは${data.name}です．利用するマークはXです．対戦相手にこのリンクにアクセスしてもらってください．: ${data.url}`;
 
             // Create game for player 1
             game = new Game(data.room);
@@ -221,6 +236,8 @@
          * This event is received when opponent connects to the room.
          */
         socket.on('player1', (data) => {
+            console.log('setCurrentTurn(true) 1');
+            const message = `Hello, ${player.getPlayerName()}`;
             player.setCurrentTurn(true);
         });
 
@@ -229,8 +246,7 @@
          * This event is received when P2 successfully joins the game room.
          */
         socket.on('player2', (data) => {
-            $('#new').hide();
-            const message = `あなたは${data.name}で後攻です．利用するマークはOです．`;
+            const message = `Hello, ${data.name}`;
 
             // Create game for player 2
             game = new Game(data.room);
@@ -243,6 +259,7 @@
          * Allow the current player to play now.
          */
         socket.on('turnPlayed', (data) => {
+            console.log('setCurrentTurn(true) 2');
             const row = data.tile.split('_')[1][0];
             const col = data.tile.split('_')[1][1];
             const opponentType = player.getPlayerType() === P1 ? P2 : P1;

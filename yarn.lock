@@ -596,11 +596,6 @@ socket.io@^1.7.1:
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha1-Fhx9rBd2Wf2YEfQ3cfqZOBR4Yow=
 
-tinyurl@^1.1.7:
-  version "1.1.7"
-  resolved "https://registry.yarnpkg.com/tinyurl/-/tinyurl-1.1.7.tgz#1a8a1d56776a7c03a72e803ac902d27783d6d212"
-  integrity sha512-NCnyDkBTByS/pLH/Vrx/DPL8EciAUDoAvruaM/WnQLfX6Uame3D1nuWNy2Z9CXw7rcsok0tjuonRLolhmyz5rg==
-
 to-array@0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/to-array/-/to-array-0.1.4.tgz#17e6c11f73dd4f3d74cda7a4ff3238e9ad9bf890"

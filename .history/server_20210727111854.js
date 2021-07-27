@@ -6,6 +6,7 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
 const hostname = '127.0.0.1';
+// const hostname = '192.168.144.243';
 const port = process.env.PORT || 3000;
 
 let rooms = 0;

@@ -35,7 +35,7 @@ io.on('connection', (socket) => {
       socket.broadcast.to(data.room).emit('player1', {});
       socket.emit('player2', { name: data.name, room: data.room });
     } else {
-      socket.emit('err', { message: 'この部屋はいっぱいです．' });
+      socket.emit('err', { message: 'Sorry, The room is full!' });
     }
   });
 
@@ -50,8 +50,8 @@ io.on('connection', (socket) => {
   });
 
   /**
-   * Notify the players about the victor.
-   */
+       * Notify the players about the victor.
+       */
   socket.on('gameEnded', (data) => {
     socket.broadcast.to(data.room).emit('gameEnd', data);
   });
